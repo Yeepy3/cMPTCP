@@ -1134,7 +1134,7 @@ restart:
 				//printk("sandybpf_ofo path id %d RTT %u\n",id,(tp->rcv_rtt_est.rtt_us>>3)/1000);
                 	}
         	}
-		if(sysctl_fast_mptcp_plus_rsv2>0){
+		if(sysctl_fast_mptcp_plus_rsv2>0){ // may path 개수?
 			//Find the shortest path first
 			struct mptcp_tcp_sock *mptcp;
                         mptcp_for_each_sub(mpcb, mptcp) {
@@ -1156,13 +1156,13 @@ restart:
                                         goto FAST_MPTCP_PLUS;
                                 if((tp->rcv_rtt_est.rtt_us>>3)==srtt){
                                 	stp=tp;
-					ssk=sk_it;
+					ssk=sk_it; // shortest path
 				}else{
 					ltp=tp;
-					lsk=sk_it;
+					lsk=sk_it; // longest path
 				}		
                         }
-			if((cur_time-start_time_1)>2005000 && stp && ltp &&ssk &&lsk && (!ltp->fast_mptcp_plus.rsv3)&&(!stp->fast_mptcp_plus.rsv3)){
+			if((cur_time-start_time_1)>2005000 && stp && ltp && ssk && lsk && (!ltp->fast_mptcp_plus.rsv3)&&(!stp->fast_mptcp_plus.rsv3)){
 				mp_bytes=0;
 				mptcp_for_each_sub(mpcb, mptcp) {
                                 	struct sock *sk_it = mptcp_to_sock(mptcp);
@@ -1179,9 +1179,9 @@ restart:
 				best_tput=(stp->bytes_received-stp->fast_mptcp_plus.bytes_received_prev)+fast_mptcp_plus_ofo;
 				if( (mp_tput>=((sysctl_fast_mptcp_plus_rsv3*best_tput)/10)) && fast_mptcp_plus_ofo>0 ){
 					printk("Blocking the path not happen for id %d small_RTT %u ms large_RTT %u ms mp_tput %llu Kbps best_tput %llu Kbps OFO %llu mp_bytes %llu best_bytes %llu l_bytes %llu \n",ltp->mptcp->path_index,((stp->rcv_rtt_est.rtt_us>>3)/1000),((ltp->rcv_rtt_est.rtt_us>>3)/1000),mp_tput,best_tput,fast_mptcp_plus_ofo,mp_bytes,(stp->bytes_received-stp->fast_mptcp_plus.bytes_received_prev),(ltp->bytes_received-ltp->fast_mptcp_plus.bytes_received_prev));
-				}else if(fast_mptcp_plus_ofo>0){
+				}else if(fast_mptcp_plus_ofo>0){ 
 					printk("Blocking the path id %d small_RTT %u ms large_RTT %u ms mp_tput %llu Kbps best_tput %llu Kbps OFO %llu mp_bytes %llu best_bytes %llu l_bytes %llu \n",ltp->mptcp->path_index,((stp->rcv_rtt_est.rtt_us>>3)/1000),((ltp->rcv_rtt_est.rtt_us>>3)/1000),mp_tput,best_tput,fast_mptcp_plus_ofo,mp_bytes,(stp->bytes_received-stp->fast_mptcp_plus.bytes_received_prev),(ltp->bytes_received-ltp->fast_mptcp_plus.bytes_received_prev));
-					ltp->fast_mptcp_plus.rsv3=1;
+					ltp->fast_mptcp_plus.rsv3=1; // disable the path
 					start_time_2=cur_time;
 				}
 				start_time_1=cur_time;
@@ -1196,10 +1196,10 @@ restart:
                        		}
 			}
 			if(lsk &&ssk && ltp &&stp && cur_time-start_time_2>=5005000 && (ltp->fast_mptcp_plus.rsv3==1 || stp->fast_mptcp_plus.rsv3==1)&& fast_mptcp_plus_ofo==0){
-				if(ltp->fast_mptcp_plus.rsv3==1){
-					ltp->fast_mptcp_plus.rsv3=0;
-                                        ltp->mptcp->send_mp_prio=1;
-                                        ltp->mptcp->low_prio=0;
+				if(ltp->fast_mptcp_plus.rsv3==1){ // if large RTT path is blocked
+					ltp->fast_mptcp_plus.rsv3=0; // enable the path
+                                        ltp->mptcp->send_mp_prio=1; // send MP_PRIO (mptcp.h,mptcp_tcp_sock)
+                                        ltp->mptcp->low_prio=0;// set the path as high priority==enable path
 					tcp_send_ack(lsk);
 
 				}else if (stp->fast_mptcp_plus.rsv3==1){

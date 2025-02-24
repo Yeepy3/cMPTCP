@@ -1679,6 +1679,7 @@ lookup:
 	if (!sk)
 		goto no_tcp_socket;
 	/*fast_mptcp_plus*/
+	// exll throughput caculation
 	tp=tcp_sk(sk);
 	if(sysctl_fast_mptcp_plus>0 && sk){
 		pcount++;

@@ -1184,7 +1184,7 @@ int tcp_transmit_skb(struct sock *sk, struct sk_buff *skb, int clone_it,
 		//FAST_MPTCP: send MP_PRIO signal
 		if(tp->fast_mptcp_plus.rsv3){
 			tp->mptcp->send_mp_prio=1;
-                        tp->mptcp->low_prio=1;
+                        tp->mptcp->low_prio=1; // disable path
 		}
 		//END:FAST_MPTCP
 		tcp_ecn_send(sk, skb, th, tcp_header_size);

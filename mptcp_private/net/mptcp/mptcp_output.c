@@ -1325,16 +1325,16 @@ void mptcp_options_write(__be32 *ptr, struct tcp_sock *tp,
 		ptr += MPTCP_SUB_LEN_PRIO_ALIGN >> 2;
 	}
 
+	//rate throttling part?
 	if (tp == NULL)
 		return;
-
 	if (opts->extending_len > 0) {
 		int w;
 		int id = 0;
 		if (mptcp(tp))
 		    id = (int) tp->mptcp->path_index;
 		if(id==tp->fast_mptcp_plus.rsv2 && tp->fast_mptcp_plus.rsv1 && tp->fast_mptcp_plus.tput>0){
-			w = tcp_call_bpf_2arg((struct sock *)tp, BPF_MPTCP_OPTIONS_WRITE, tp->fast_mptcp_plus.tput, id);
+			w = tcp_call_bpf_2arg((struct sock *)tp, BPF_MPTCP_OPTIONS_WRITE, tp->fast_mptcp_plus.tput, id); // arg1: tput, arg2: path_index
 			printk("sandybpf: Wrote %d",w);
 			if (w != 0) {
 				/* write option data to the skb pointed by ptr */
